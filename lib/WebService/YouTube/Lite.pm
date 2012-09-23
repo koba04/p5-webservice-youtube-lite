@@ -10,7 +10,7 @@ use JSON;
 use List::MoreUtils qw/uniq/;
 
 sub new {
-    my ($class, %opt) = @_;
+    my $class = shift;
 
     # set default value
     my $self = {
@@ -39,7 +39,7 @@ sub search {
         %$base_param,
         %param,
     };
-    my $response = $self->_http_request(param => $merge_param, format => 'json');
+    my $response = $self->_http_request(param => $merge_param, format => 'json')->{content};
     my $result;
     if ( $response->{data} && $response->{data}->{items} ) {
         $result = $response->{data}->{items};
@@ -57,7 +57,10 @@ sub fetch_by_id {
         param   => { alt => 'json' },
         format  => 'json',
     );
-    my $entry = $res_json->{entry};
+
+    return if !$res_json || $res_json->{error};
+
+    my $entry = $res_json->{content}->{entry};
     my $video_info = {
         id          => $id,
         author      => $entry->{author}->[0]->{name}->{'$t'},
@@ -90,8 +93,9 @@ sub extract_video_ids {
 
     croak 'need arguments "url"' unless $url;
 
-    my $content = $self->_http_request(uri => $url) || '';
-    my @ids =  ($content =~ m{http://www\.youtube\.com/watch\?v=([a-zA-Z0-9\-_]+)(?:&|")?}sg);
+    my $content = $self->_http_request(uri => $url)->{content} || '';
+    my @ids = ();
+    push @ids, ($content =~ m{http://www\.youtube\.com/watch\?v=([a-zA-Z0-9\-_]+)(?:&|")?}sg);
     push @ids, ($content =~ m{http://www\.youtube\.com/v/([a-zA-Z0-9\-_]+)(?:&|")?}sg);
     push @ids, ($content =~ m{http://youtu\.be/([a-zA-Z0-9\-_]+)(?:&|")?}sg);
 
@@ -107,13 +111,19 @@ sub _http_request {
         $uri->query_form(%{ $args{param} });
     }
     my $res = $self->{ua}->get($uri);
-    croak "http request error => [" . $uri->as_string . "][" . $res->status_line . "]" if !$res->is_success;
-    my $content = $res->content;
-
-    if ( $args{format} && $args{format} eq 'json' ) {
-        $content = decode_json($content);
+    my $response = {};
+    if ( $res->is_success ) {
+        $response = {
+            content => ($args{format} && $args{format} eq 'json') ? decode_json($res->content) : $res->content,
+        };
+    } else {
+        $response = {
+            content => "error",
+            error   => { status => $res->status, message => $res->message, url => $uri->as_string },
+        };
     }
-    return $content;
+
+    return $response;
 }
 
 1;
