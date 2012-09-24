@@ -95,11 +95,17 @@ sub extract_video_ids {
 
     my $content = $self->_http_request(uri => $url)->{content} || '';
     my @ids = ();
-    push @ids, ($content =~ m{http://www\.youtube\.com/watch\?v=([a-zA-Z0-9\-_]+)(?:&|")?}sg);
-    push @ids, ($content =~ m{http://www\.youtube\.com/v/([a-zA-Z0-9\-_]+)(?:&|")?}sg);
-    push @ids, ($content =~ m{http://youtu\.be/([a-zA-Z0-9\-_]+)(?:&|")?}sg);
-
-    return { ids => [ uniq @ids ] };
+    @ids = $content =~ m{
+        (?:
+            http://www\.youtube\.com/watch\?v= # http://www.youtube.com/watch?v=video_id
+                |
+            http://www\.youtube\.com/v/ # http://www.youtube.com/v/video_id
+                |
+            http://youtu\.be/ # http://youtu.be/video_id
+        )
+        ([a-zA-Z0-9\-_]+)(?:\?&|")? # match video id
+    }gxms;
+    return { ids => [ grep { $_ } uniq @ids ] };
 }
 
 sub _http_request {
