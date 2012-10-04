@@ -17,6 +17,10 @@ subtest 'basic' => sub {
 
         $res = $youtube->extract_video_ids("http://google.com/");
         is scalar @{ $res->{ids} }, 0, 'no video id';
+
+        $res = $youtube->extract_video_ids("http://www.youtube.com/results?search_query=radiohead");
+        ok scalar @{ $res->{ids} }, 'extract video id (in youtube)';
+
     }
 
     dies_ok { $youtube->extract_video_ids } "no url parameter";

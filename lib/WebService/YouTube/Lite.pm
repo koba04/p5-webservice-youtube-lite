@@ -105,6 +105,14 @@ sub extract_video_ids {
         )
         ([a-zA-Z0-9\-_]+)(?:\?&|")? # match video id
     }gxms;
+
+    # YouTube
+    if ( $url =~ m{http://www\.youtube\.com/} ) {
+        push @ids, $content =~ m{
+            /watch\?v=([a-zA-Z0-9\-_]+)(?:\?&|")?
+        }gxms;
+    }
+
     return { ids => [ grep { $_ } uniq @ids ] };
 }
 
