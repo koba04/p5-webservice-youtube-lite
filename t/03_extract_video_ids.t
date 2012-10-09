@@ -14,6 +14,7 @@ subtest 'basic' => sub {
 
         my $res = $youtube->extract_video_ids("http://matome.naver.jp/odai/2132876130063084301");
         ok scalar grep { $_ eq '8VXCM5QUalU' } @{ $res->{ids} }, 'extract video id';
+        is $res->{title}, '『邦楽ロックバンド 解散ライブの動画』まとめ - NAVER まとめ', 'title';
 
         $res = $youtube->extract_video_ids("http://google.com/");
         is scalar @{ $res->{ids} }, 0, 'no video id';

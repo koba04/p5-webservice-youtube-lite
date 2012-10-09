@@ -113,7 +113,9 @@ sub extract_video_ids {
         }gxms;
     }
 
-    return { ids => [ grep { $_ } uniq @ids ] };
+    my $title;
+    ($title) = $content =~ m{<title>(.*)</title>}i;
+    return { title => $title, ids => [ grep { $_ } uniq @ids ] };
 }
 
 sub _http_request {
