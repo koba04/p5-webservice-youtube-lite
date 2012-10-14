@@ -102,6 +102,8 @@ sub extract_video_ids {
             http://www\.youtube\.com/v/ # http://www.youtube.com/v/video_id
                 |
             http://youtu\.be/ # http://youtu.be/video_id
+                |
+            http://www\.youtube\.com/embed/ # http://www.youtube.com/embed/video_id
         )
         ([a-zA-Z0-9\-_]+)(?:\?&|")? # match video id
     }gxms;
