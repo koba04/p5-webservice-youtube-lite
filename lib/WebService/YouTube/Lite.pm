@@ -93,7 +93,7 @@ sub extract_video_ids {
 
     croak 'need arguments "url"' unless $url;
 
-    my $content = $self->_http_request(uri => $url)->{content} || '';
+    my $content = $self->_http_request(uri => URI->new($url))->{content} || '';
     my @ids = ();
     @ids = $content =~ m{
         (?:
